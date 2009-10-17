@@ -106,6 +106,7 @@ SV* new_env(struct evhttp_request *req) {
     struct evkeyval *header;
     const char *qstring, *p;
     char *decoded_uri, *method;
+    char http_version[9];
 
     decoded_uri = evhttp_decode_uri(req->uri);
 
@@ -158,8 +159,8 @@ SV* new_env(struct evhttp_request *req) {
     hv_store(env, "SERVER_PORT", 11, newSViv(settings.port), 0);
 
     /* SERVER_PROTOCOL */
-    /* TODO */
-    hv_store(env, "SERVER_PROTOCOL", 15, newSVpv("HTTP/1.0", 0), 0);
+    sprintf(http_version, "HTTP/%1d.%1d", req->major, req->minor);
+    hv_store(env, "SERVER_PROTOCOL", 15, newSVpv(http_version, 0), 0);
 
     /* HTTP_ valiables */
     TAILQ_FOREACH(header, req->input_headers, next) {
