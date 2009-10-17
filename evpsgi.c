@@ -286,17 +286,73 @@ void add_headers(struct evhttp_request *req,  SV *headers )
     }
 }
 
-void add_body(struct evbuffer *buf, struct evhttp_request *req,  SV *body )
+int add_body(struct evbuffer *buf, struct evhttp_request *req,  SV *body )
+{
+    int ret, type;
+
+    switch (type = SvTYPE(SvRV(body))) {
+        case SVt_PVAV:
+            ret = add_body_av(buf, req, (AV *) SvRV(body));
+            break;
+        case SVt_PVHV: /* IO::Handle::Iterator */
+        case SVt_PVGV:
+            if (!sv_derived_from(body, "IO::Handle")) {
+                err(1, "response body must be devived from IO::Handle");
+            }
+            ret = add_body_iterator(buf, req, body);
+            break;
+        default:
+            err(1, "response body must be an array reference or IO::Handle like object");
+            ret = 0;
+            break;
+    }
+
+    return ret;
+}
+
+int add_body_iterator(struct evbuffer *buf, struct evhttp_request *req,  SV *io )
+{
+    dTHX;
+    SV *buf_sv;
+    STRLEN len;
+    dSP;
+    char *line;
+    int count;
+
+    ENTER;
+    SAVETMPS;
+
+    while (1) {
+        PUSHMARK(SP);
+        XPUSHs(io);
+        PUTBACK;
+        count = call_method("getline", G_SCALAR);
+        SPAGAIN;
+        buf_sv = POPs;
+        if (!SvOK(buf_sv))
+            break;
+        line = SvPV(buf_sv, len);
+        evbuffer_add(buf, line, len);
+        count += len;
+    }
+    PUSHMARK(SP);
+    XPUSHs(io);
+    PUTBACK;
+    call_method("close", G_DISCARD);
+    SPAGAIN;
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+    return count;
+}
+
+int add_body_av(struct evbuffer *buf, struct evhttp_request *req,  AV *body_av )
 {
     SV *b;
-    AV *body_av;
     I32 i, lastidx;
     STRLEN len;
     char *line;
-
-    /*TODO: support IO::Handle-like object or a built-in filehandle */
-
-    body_av = (AV *) SvRV(body);
+    int ret;
 
     lastidx = av_len(body_av);
     for (i = 0; i <= lastidx; i++) {
@@ -304,8 +360,10 @@ void add_body(struct evbuffer *buf, struct evhttp_request *req,  SV *body )
         if (SvOK(b)) {
             line = SvPV(b, len);
             evbuffer_add(buf, line, len);
+            ret += len;
         }
     }
+    return ret;
 }
 
 void psgi_handler(struct evhttp_request *req, void *arg)
