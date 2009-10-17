@@ -1,6 +1,6 @@
 /*
 
-cc -Wall evpsgi.c  -levent `perl -MExtUtils::Embed -e ccopts -e ldopts`
+gcc -g -Werror -std=c99 -o evpsgi evpsgi.c  -levent `perl -MExtUtils::Embed -e ccopts -e ldopts`
 
 For Mac OS X (port)
 
@@ -287,33 +287,6 @@ void add_headers(struct evhttp_request *req,  SV *headers )
     }
 }
 
-int add_body(struct evbuffer *buf, struct evhttp_request *req,  SV *body )
-{
-    int ret, type;
-
-    switch (type = SvTYPE(SvRV(body))) {
-        case SVt_PVAV:
-            ret = add_body_av(buf, req, (AV *) SvRV(body));
-            break;
-        case SVt_PVHV:
-            if (!sv_derived_from(body, "IO::Handle::Iterator")) {
-                err(1, "response body must be an array reference or IO::Handle like object");
-            }
-        case SVt_PVGV:
-            if (!sv_derived_from(body, "IO::Handle")) {
-                require_pv("IO/Handle.pm");
-            }
-            ret = add_body_iterator(buf, req, body);
-            break;
-        default:
-            err(1, "response body must be an array reference or IO::Handle like object");
-            ret = 0;
-            break;
-    }
-
-    return ret;
-}
-
 int add_body_iterator(struct evbuffer *buf, struct evhttp_request *req,  SV *io )
 {
     dTHX;
@@ -369,6 +342,33 @@ int add_body_av(struct evbuffer *buf, struct evhttp_request *req,  AV *body_av )
     }
     return ret;
 }
+int add_body(struct evbuffer *buf, struct evhttp_request *req,  SV *body )
+{
+    int ret, type;
+
+    switch (type = SvTYPE(SvRV(body))) {
+        case SVt_PVAV:
+            add_body_av(buf, req, (AV *) SvRV(body));
+            break;
+        case SVt_PVHV:
+            if (!sv_derived_from(body, "IO::Handle::Iterator")) {
+                err(1, "response body must be an array reference or IO::Handle like object");
+            }
+        case SVt_PVGV:
+            if (!sv_derived_from(body, "IO::Handle")) {
+                require_pv("IO/Handle.pm");
+            }
+            add_body_iterator(buf, req, body);
+            break;
+        default:
+            err(1, "response body must be an array reference or IO::Handle like object");
+            ret = 0;
+            break;
+    }
+
+    return ret;
+}
+
 
 void psgi_handler(struct evhttp_request *req, void *arg)
 {
