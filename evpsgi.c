@@ -225,6 +225,7 @@ SV* new_env(struct evhttp_request *req) {
     /* psgi.nonblocking */
     hv_store(env, "psgi.nonblocking", 16, newSViv(1), 0);
 
+    free(decoded_uri);
     return newRV_inc((SV *) env);
 }
 
