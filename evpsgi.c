@@ -96,6 +96,7 @@ struct settings {
     u_short port;
     char *inter;
     char *server_name;
+    bool alias_is_root;
 };
 
 SV* new_env(struct evhttp_request *req) {
@@ -132,7 +133,7 @@ SV* new_env(struct evhttp_request *req) {
 
     /* SCRIPT_NAME */
     /* PATH_INFO */
-    if (strcmp(settings.alias, "/") == 0) {
+    if (settings.alias_is_root) {
         hv_store(env, "SCRIPT_NAME", 11, newSVpv("", 0), 0);
         hv_store(env, "PATH_INFO", 9, newSVpv(decoded_uri, strcspn(decoded_uri, "?")), 0);
     }
@@ -384,15 +385,19 @@ void psgi_handler(struct evhttp_request *req, void *arg)
     if (evb == NULL)
         err(1, "failed to create response buffer");
 
-    ptr = req->uri + strlen(settings.alias);
+    ptr = req->uri;
+
+    if (!settings.alias_is_root)
+        ptr += strlen(settings.alias);
+
     if (strncmp(req->uri, settings.alias, strlen(settings.alias)) != 0) {
-        evhttp_send_error(req, HTTP_NOTFOUND, "File Not Found");
+        evhttp_send_error(req, HTTP_NOTFOUND, "File Not Found.");
         evbuffer_free(evb);
         FREETMPS;
         LEAVE;
         return;
     }
-    else if (*ptr == '\0' || *ptr == '?' || *ptr == '#') {
+    else if (!(*ptr == '/' || *ptr == '?' || *ptr == '#')) {
         evhttp_send_error(req, HTTP_NOTFOUND, "File Not Found");
         evbuffer_free(evb);
         FREETMPS;
@@ -448,6 +453,7 @@ static void settings_init(void) {
     settings.port = 80;
     settings.file =  NULL;
     settings.alias = "/";
+    settings.alias_is_root = TRUE;
     settings.server_name = NULL;
 }
 
@@ -497,6 +503,12 @@ int main(int argc, char **argv, char**env)
         }
     }
 
+    if (settings.file == NULL)
+        errx(1, "No psgi file specified");
+
+    settings.alias_is_root = (strcmp(settings.alias, "/") == 0)
+        ? TRUE : FALSE;
+
     snprintf(port_buf, sizeof(port_buf), "%d", settings.port);
     error= getaddrinfo(settings.inter, port_buf, &hints, &ai);
     if (error != 0) {
@@ -519,9 +531,6 @@ int main(int argc, char **argv, char**env)
         settings.server_name = server_name_buf; 
         break;
     }
-
-    if (settings.file == NULL)
-        errx(1, "No psgi file specified");
 
     PERL_SYS_INIT3(&argc,&argv,&env);
     perlinterp = perl_alloc();
