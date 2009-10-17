@@ -294,10 +294,13 @@ int add_body(struct evbuffer *buf, struct evhttp_request *req,  SV *body )
         case SVt_PVAV:
             ret = add_body_av(buf, req, (AV *) SvRV(body));
             break;
-        case SVt_PVHV: /* IO::Handle::Iterator */
+        case SVt_PVHV:
+            if (!sv_derived_from(body, "IO::Handle::Iterator")) {
+                err(1, "response body must be an array reference or IO::Handle like object");
+            }
         case SVt_PVGV:
             if (!sv_derived_from(body, "IO::Handle")) {
-                err(1, "response body must be devived from IO::Handle");
+                require_pv("IO/Handle.pm");
             }
             ret = add_body_iterator(buf, req, body);
             break;
