@@ -566,7 +566,6 @@ int main(int argc, char **argv, char**env)
     PERL_SYS_TERM();
     evhttp_free(httpd);
     event_base_free(ev);
-    free(code);
 
     return 0;
 }
