@@ -231,7 +231,7 @@ SV* new_env(struct evhttp_request *req) {
     return newRV_inc((SV *) env);
 }
 
-static SV *run_app(struct evhttp_request *req, SV *env)
+static SV *run_app(SV *env)
 {
     dTHX;
     int count;
@@ -408,7 +408,7 @@ void psgi_handler(struct evhttp_request *req, void *arg)
 
     env = new_env(req);
 
-    res = run_app(req, env);
+    res = run_app(env);
     if (res == NULL) {
         evhttp_send_error(req, 500, "Internal Server Error");
         evbuffer_free(evb);
