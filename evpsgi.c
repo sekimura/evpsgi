@@ -269,6 +269,34 @@ static SV *run_app(SV *env)
     return res;
 }
 
+static SV * delayed_res(SV *cb)
+{
+    SV *respond, *res;
+    char *code;
+    I32 ax;
+    int count;
+
+    dSP;
+
+    /* TODO: support the writer object */ 
+    code = "sub { my $res = shift; $res;}";
+    respond = eval_pv(code, TRUE);
+
+    PUSHMARK(SP);
+    XPUSHs(respond);
+    PUTBACK;
+
+    count = call_sv(cb, G_SCALAR);
+
+    SPAGAIN;
+    SP -= count;
+    ax = (SP - PL_stack_base) + 1;
+    res = ST(0);
+    PUTBACK;
+
+    return res;
+}
+
 void add_headers(struct evhttp_request *req,  SV *headers )
 {
     AV * headers_av;
@@ -417,8 +445,13 @@ void psgi_handler(struct evhttp_request *req, void *arg)
         return;
     }
 
-    res_av = (AV *) SvRV(res);
+    if ( SvTYPE(SvRV(res)) == SVt_PVCV ) {
+        res = delayed_res(res);
+        SvREFCNT_inc(res);
+    }
 
+    res_av = (AV *) SvRV(res);
+ 
     /* response status code */
     status = (SV *) *(av_fetch(res_av, 0, 0));
 
