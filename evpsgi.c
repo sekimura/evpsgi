@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <err.h>
 #include <stdarg.h>
+#include <sysexits.h>
 
 #include <netdb.h>
 #include <event.h>
@@ -487,6 +488,16 @@ static void settings_init(void) {
     settings.server_name = NULL;
 }
 
+static void usage(void) {
+    printf(PACKAGE " " VERSION "\n");
+    printf("-p <num>      TCP port number to listen on (default: 80)\n"
+           "-f <file>     PSGI script file\n"
+           "-a <mask>     alias\n"
+           "-l <ip_addr>  interface to listen on (default: INADDR_ANY, all addresses)\n"
+    );
+    return;
+}
+
 int main(int argc, char **argv, char**env)
 {
     int c;
@@ -513,6 +524,7 @@ int main(int argc, char **argv, char**env)
           "p:"  /* TCP port number to listen on */
           "f:"  /* psgi script file */
           "l:"  /* interface to listen on */
+          "h"   /* usage */
         ))) {
         switch (c) {
         case 'a':
@@ -527,6 +539,9 @@ int main(int argc, char **argv, char**env)
         case 'l':
             settings.inter= optarg;
             break;
+        case 'h':
+            usage();
+            exit(EXIT_SUCCESS);
         default:
             warnx("Illegal argument \"%c\"", c);
             return 1;

@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.64)
 m4_include([version.m4])
-AC_INIT(FULL-PACKAGE-NAME, VERSION, BUG-REPORT-ADDRESS)
+AC_INIT([evpsgi], [1.0.0], [sekimura@gmail.com])
 AC_CONFIG_SRCDIR([evpsgi.c])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADER([config.h])
