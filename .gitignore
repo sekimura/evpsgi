@@ -1,0 +1,12 @@
+.deps/
+*.swp
+*~
+Makefile
+autom4te.cache
+config.h
+config.log
+config.status
+evpsgi
+evpsgi.o
+missing
+stamp-h1
