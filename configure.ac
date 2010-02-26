@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.64)
+AC_PREREQ(2.52)
 m4_include([version.m4])
 AC_INIT([evpsgi], [1.0.0], [sekimura@gmail.com])
 AC_CONFIG_SRCDIR([evpsgi.c])
@@ -110,8 +110,20 @@ if test $ac_cv_libevent_dir != "(system)"; then
   fi
 fi
 
-LDFLAGS="$LDFLAGS `perl -MExtUtils::Embed -e ldopts`"
-CFLAGS="$CFLAGS `perl -MExtUtils::Embed -e ccopts`"
+dnl ------------------------------------------------------
+dnl -- perl detection to embed
+tryperlpath=`which perl`
+AC_ARG_WITH(perl,
+       [  --with-perl=PATH     Specify path to perl installation ],
+       [
+                if test "x$withval" != "x" ; then
+                        tryperlpath=$withval
+                fi
+       ]
+)
+
+LDFLAGS="$LDFLAGS `$tryperlpath -MExtUtils::Embed -e ldopts`"
+CFLAGS="$CFLAGS `$tryperlpath -MExtUtils::Embed -e ccopts`"
 
 dnl -- hmm it depends on MacPorts actually. I'll find out a better way later
 LDFLAGS=`echo $LDFLAGS | sed -e 's/-arch ppc//'`
