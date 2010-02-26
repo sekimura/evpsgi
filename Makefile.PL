@@ -66,9 +66,10 @@ EOF
     print $mfh $test_c;
 
     my $ret = 0;
-    system "cc -c -I$cflags conftest.c >& /dev/null";
-    system "cc -o /dev/null conftest.o -L$ldflags -levent >& /dev/null";
-    $ret =  $? == 0 ? 1 : 0;
+    system "cc -c -I$cflags conftest.c";
+    system "cc -o /dev/null conftest.o -L$ldflags -levent";
+    $ret = $? == 0 ? 1 : 0;
+
     unlink qw/conftest.c conftest.o/;
 
     return $ret;
