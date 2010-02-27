@@ -122,7 +122,10 @@ AC_ARG_WITH(perl,
        ]
 )
 
-LDFLAGS="$LDFLAGS `$tryperlpath -MExtUtils::Embed -e ldopts`"
+perl_LIBS=`$tryperlpath ./embed_util.pl --libs`
+perl_LDFLAGS=`$tryperlpath ./embed_util.pl --ldflags`
+LIBS="$LIBS $perl_LIBS"
+LDFLAGS="$LDFLAGS $perl_LDFLAGS"
 CFLAGS="$CFLAGS `$tryperlpath -MExtUtils::Embed -e ccopts`"
 
 dnl -- hmm it depends on MacPorts actually. I'll find out a better way later
