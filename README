@@ -1,0 +1,25 @@
+evpsgi -- PSGI implementation with libevent httpd
+
+Libevent provides, along with a basic API, http server API. Back in the days
+when we discussed differences between PSGI/spec and Plack/implementation,
+I decided to embed Perl into libevent httpd to keep diversions of PSGI
+implementation. I thought that would help people understand what the PSGI is.
+
+evpsgi is pretty fast because of libevent advantages and a direct embedding.
+Although there are some limitations such as a lack of psgi.streaming support,
+multi-thread and more, you can enjoy hacking this tiny code.
+
+Dependencies:
+
+   -- Libevent, http://www.monkey.org/~provos/libevent/ (libevent-dev)
+   -- Perl, http://www.cpan.org/src/README.html
+
+Install:
+
+   ./configure [--with-libevent=/usr/local] [--with-perl=/usr/local/bin/perl]
+   make
+   sudo make install
+
+See Also:
+    -- PSGI, http://search.cpan.org/dist/PSGI/
+    -- http://plackperl.org/
