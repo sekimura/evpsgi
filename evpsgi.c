@@ -592,8 +592,8 @@ int main(int argc, char **argv, char**env)
 
     /* start httpd */
     ev = event_init();
-    httpd = evhttp_start(settings.inter, settings.port);
-    if (httpd == NULL) {
+    httpd = evhttp_new(ev);
+    if ( evhttp_bind_socket(httpd, settings.inter, settings.port) == -1) {
         err(1, "evhttp_start(\"%s\", %d) failed: ", settings.inter, settings.port);
     }
     else {
