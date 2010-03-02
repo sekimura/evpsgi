@@ -1,4 +1,4 @@
-evpsgi -- PSGI implementation with libevent httpd
+evpsgi -- PSGI implementation with libevent (version2) httpd
 
 Libevent provides, along with a basic API, http server API. Back in the days
 when we discussed differences between PSGI/spec and Plack/implementation,
@@ -16,7 +16,7 @@ Dependencies:
 
 Install:
 
-   ./configure [--with-libevent=/usr/local] [--with-perl=/usr/local/bin/perl]
+   ./configure [--with-libevent2=/usr/local] [--with-perl=/usr/local/bin/perl]
    make
    sudo make install
 
