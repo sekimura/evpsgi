@@ -1,12 +1,27 @@
-.deps/
-*.swp
-*~
+# Autotools stuff
+.deps
 Makefile
+Makefile.in
+
+## The initial / makes these files only get ignored in particular directories.
 autom4te.cache
-config.h
+aclocal.m4
+compile
+config.guess
 config.log
 config.status
+config.sub
+configure
+depcomp
+config.h
+config.h.in
+install-sh
+stamp-h1
+
+# from editors
+*.swp
+*~
+
+# generated binaries
 evpsgi
 evpsgi.o
-missing
-stamp-h1

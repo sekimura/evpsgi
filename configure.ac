@@ -30,8 +30,8 @@ AC_CHECK_FUNCS([strchr strcspn])
 
 
 trylibeventdir=""
-AC_ARG_WITH(libevent,
-       [  --with-libevent=PATH     Specify path to libevent installation ],
+AC_ARG_WITH(libevent2,
+       [  --with-libevent2=PATH     Specify path to libevent2 installation ],
        [
                 if test "x$withval" != "xno" ; then
                         trylibeventdir=$withval
@@ -72,7 +72,7 @@ AC_CACHE_CHECK([for libevent directory], ac_cv_libevent_dir, [
     # Can I compile and link it?
     AC_TRY_LINK([#include <sys/time.h>
 #include <sys/types.h>
-#include <event.h>], [ event_init(); ],
+#include <event2/event.h>], [ event_init(); ],
        [ libevent_linked=yes ], [ libevent_linked=no ])
     if test $libevent_linked = yes; then
        if test ! -z "$ledir" ; then
@@ -88,9 +88,9 @@ AC_CACHE_CHECK([for libevent directory], ac_cv_libevent_dir, [
   LDFLAGS="$saved_LDFLAGS"
   CFLAGS="$saved_CFLAGS"
   if test $le_found = no ; then
-    AC_MSG_ERROR([libevent is required.  You can get it from $LIBEVENT_URL
+    AC_MSG_ERROR([libevent version2 is required.  You can get it from $LIBEVENT_URL
 
-      If it's already installed, specify its path using --with-libevent=/dir/
+      If it's already installed, specify its path using --with-libevent2=/dir/
 ])
   fi
 ])
